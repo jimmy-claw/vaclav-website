@@ -83,7 +83,7 @@
                          <span style="color:var(--accent2)">Discords:</span> 47
                          <span style="color:var(--accent2)">Coffee:</span>  ☕☕☕☕☕ (5/5)`,
 
-      version: () => `<span style="color:var(--accent)">vaclavOS 2026.06-4</span>
+      version: () => `<span style="color:var(--accent)">vaclavOS 2026.06-5</span>
         <span style="color:var(--fg-muted); font-size:12px;">Waku Mesh Trollbox - GitHub Pages Deploy</span>`,
       
       whoami: () => `vpavlin — Solution Engineer @ Logos
@@ -616,6 +616,7 @@ MiB Mem : 128000.0 total,  34567.8 free,  45678.9 used,  47753.3 buff/cache
           // Wait for at least one peer connection with detailed monitoring
           let connected = false;
           console.log('Starting peer connection wait...');
+          console.log('Bootstrap peers configured:', nodeOptions.bootstrapPeers);
           for (let i = 0; i < 40; i++) {  // Increase to 20 seconds total
             await new Promise(r => setTimeout(r, 500));
             try {
@@ -662,8 +663,19 @@ MiB Mem : 128000.0 total,  34567.8 free,  45678.9 used,  47753.3 buff/cache
 
           try {
             console.log('Setting up filter subscription for topic:', TB_CONTENT_TOPIC);
-            await tbWakuNode.filter.subscribe(decoder, (decodedMsg) => {
-              console.log('Received message on topic:', TB_CONTENT_TOPIC);
+            console.log('Waku node state:', tbWakuNode);
+            console.log('Filter available:', !!tbWakuNode.filter);
+            
+            // Wait for subscription to be ready
+            let subscribeReady = false;
+            tbWakuNode.filter.subscribe(decoder, (decodedMsg) => {
+              if (!subscribeReady) {
+                console.log('Filter subscription activated');
+                subscribeReady = true;
+                tbAddMessage('system', `✓ Filter subscription active for ${TB_CONTENT_TOPIC}`, true);
+              }
+              console.log('Filter received message on topic:', TB_CONTENT_TOPIC);
+              console.log('Raw decoded message:', decodedMsg);
               try {
                 const msg = JSON.parse(new TextDecoder().decode(decodedMsg.payload));
                 console.log('Parsed message:', msg);
@@ -756,6 +768,11 @@ MiB Mem : 128000.0 total,  34567.8 free,  45678.9 used,  47753.3 buff/cache
 
         try {
           console.log('Sending message to topic:', TB_CONTENT_TOPIC);
+          
+          // Check connection status
+          const conns = tbWakuNode.libp2p.getConnections();
+          console.log('Current peer connections:', conns.length, conns);
+          
           const enc = tbWakuNode.createEncoder({ contentTopic: TB_CONTENT_TOPIC });
           const payload = new TextEncoder().encode(JSON.stringify({
             sender, text, time: new Date().toISOString(), timestamp: Date.now()
@@ -764,15 +781,39 @@ MiB Mem : 128000.0 total,  34567.8 free,  45678.9 used,  47753.3 buff/cache
           console.log('Payload:', payload);
           console.log('LightPush available:', !!tbWakuNode.lightPush);
           
-          tbWakuNode.lightPush.send(enc, payload, { autoRetry: true })
-            .then(() => {
-              console.log('Message sent successfully');
-              tbAddMessage('system', `✓ Sent to ${TB_CONTENT_TOPIC}`, true);
-            })
-            .catch(err => {
-              console.error('Send failed:', err);
-              tbAddMessage('system', `Send failed: ${err.message}`, true);
-            });
+          // Try both publish and lightPush methods
+          if (tbWakuNode.lightPush) {
+            tbWakuNode.lightPush.send(enc, payload, { autoRetry: true })
+              .then(() => {
+                console.log('Message sent via lightPush');
+                tbAddMessage('system', `✓ Sent to ${TB_CONTENT_TOPIC}`, true);
+              })
+              .catch(err => {
+                console.error('lightPush send failed:', err);
+                // Fallback to publish if available
+                if (tbWakuNode.publish) {
+                  tbWakuNode.publish(enc, payload)
+                    .then(() => console.log('Message sent via publish'))
+                    .catch(pubErr => console.error('Publish also failed:', pubErr));
+                }
+              });
+          } else {
+            console.error('LightPush not available!');
+            // Try publish method as fallback
+            if (tbWakuNode.publish) {
+              tbWakuNode.publish(enc, payload)
+                .then(() => {
+                  console.log('Message sent via publish fallback');
+                  tbAddMessage('system', `✓ Sent to ${TB_CONTENT_TOPIC} (publish)`, true);
+                })
+                .catch(err => {
+                  console.error('Publish failed:', err);
+                  tbAddMessage('system', `Send failed: ${err.message}`, true);
+                });
+            } else {
+              tbAddMessage('system', 'No publish methods available!', true);
+            }
+          }
         } catch(sendError) {
           tbAddMessage('system', `Send error: ${sendError.message}`, true);
         }
