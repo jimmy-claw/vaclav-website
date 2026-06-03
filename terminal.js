@@ -799,8 +799,5 @@ function tbSendMsg(text) {
         discoverPeers: () => {}
       };
 
-      // Start initialization on load
-      document.addEventListener('DOMContentLoaded', () => {
-        tbInit().catch(err => console.error('tbInit failed:', err));
-      });
+
     })();
