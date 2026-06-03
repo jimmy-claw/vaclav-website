@@ -803,4 +803,4 @@ function tbSendMsg(text) {
       document.addEventListener('DOMContentLoaded', () => {
         tbInit().catch(err => console.error('tbInit failed:', err));
       });
-    });
+    })();
