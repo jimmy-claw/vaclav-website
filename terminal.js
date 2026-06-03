@@ -54,7 +54,6 @@
     // ── Terminal Emulator ──
     const commands = {
       help: () => `Available commands:
-  <span style="color:var(--accent2)">version</span>     Show vaclavOS version
   <span style="color:var(--accent2)">neofetch</span>    Show system info
   <span style="color:var(--accent2)">whoami</span>      Who am I?
   <span style="color:var(--accent2)">fortune</span>     Random fact
@@ -83,9 +82,6 @@
                          <span style="color:var(--accent2)">Discords:</span> 47
                          <span style="color:var(--accent2)">Coffee:</span>  ☕☕☕☕☕ (5/5)`,
 
-      version: () => `<span style="color:var(--accent)">vaclavOS 2026.06-14</span>
-        <span style="color:var(--fg-muted); font-size:12px;">Waku Mesh Trollbox - GitHub Pages Deploy</span>`,
-      
       whoami: () => `vpavlin — Solution Engineer @ Logos
   ex-Red Hat (10 years)
   Co-founder (startup experience: what breaks first)
@@ -563,7 +559,7 @@ MiB Mem : 128000.0 total,  34567.8 free,  45678.9 used,  47753.3 buff/cache
           
           console.log('Waku SDK loaded successfully:', window.Waku);
 
-          // Create light node with auto sharding configuration
+          // Create light node with both default bootstrap and explicit waku.sandbox peers
           const nodeOptions = {
             numPeersToUse: 2,
             defaultBootstrap: true,
@@ -577,51 +573,150 @@ MiB Mem : 128000.0 total,  34567.8 free,  45678.9 used,  47753.3 buff/cache
               '/dns4/node-01.gc-us-central1-a.waku.sandbox.status.im/tcp/8000/wss/p2p/16Uiu2HAmRv1iQ3NoMMcjbtRmKxPuYBbF9nLYz2SDv9MTN8WhGuUU',
               '/dns4/node-01.ac-cn-hongkong-c.waku.sandbox.status.im/tcp/8000/wss/p2p/16Uiu2HAmQYiojgZ8APsh9wqbWNyCstVhnp9gbeNrxSEQnLJchC92'
             ],
-            // Use auto sharding with content topics
+            // Use correct Waku Network configuration
             networkConfig: {
-              clusterId: 0,  // Waku Network cluster ID
-              numShardsInCluster: 128  // Default number of shards
+              clusterId: 1,  // The Waku Network cluster ID (not 0!)
+              numShardsInCluster: 8  // Default number of shards per cluster
             }
           };
           
-          // Create the Waku node
-          console.log('Creating Waku node with options:', nodeOptions);
-          tbWakuNode = await createLightNode(nodeOptions);
-          console.log('Waku node created successfully');
-          
-          // Wait for node to be ready
-          await new Promise(resolve => setTimeout(resolve, 2000));
-          
-          // Check actual peer connections
-          const conns = tbWakuNode.libp2p.getConnections();
-          console.log('Peer connections:', conns.length);
-          
-          // Update UI status
-          const connected = conns.length > 0;
-          const statusText = connected ? 'connected' : 'connecting';
-          console.log('Waku node initialized, status:', statusText);
-          
-          // Update the prompt display if it exists
-          const promptEl = document.querySelector('.terminal-input-line .prompt');
-          if (promptEl) {
-            promptEl.innerHTML = `<span style="color:var(--accent2)">🔥 ${tbNickname || 'anon'}</span> <span style="color:${connected ? 'var(--accent)' : 'var(--accent4)'}">● ${statusText}</span>`;
+          // Enable Waku debug logging - multiple methods
+          if (typeof window !== 'undefined') {
+            window.DEBUG = true;
+            localStorage.setItem('waku-debug', 'true');
+            localStorage.setItem('DEBUG', 'true');
+            // Try to enable debug through environment variable simulation (Node.js only)
+            if (typeof process !== 'undefined' && process.env) {
+              process.env['WAKU_DEBUG'] = 'true';
+            }
           }
           
-          // Periodically check connection status and update UI
-          setInterval(() => {
-            const conns = tbWakuNode?.libp2p?.getConnections();
-            if (conns && conns.length > 0) {
-              const promptEl = document.querySelector('.terminal-input-line .prompt');
-              if (promptEl && promptEl.innerHTML.includes('connecting')) {
-                promptEl.innerHTML = `<span style="color:var(--accent2)">🔥 ${tbNickname || 'anon'}</span> <span style="color:var(--accent)">● connected</span>`;
-                console.log('Connection established!');
-              }
-            }
-          }, 5000);
+          console.log('Creating Waku node with options:', JSON.stringify(nodeOptions, null, 2));
           
-        } catch (error) {
-          console.error('tbInit failed:', error);
-          tbAddMessage('system', `Waku initialization failed: ${error.message}`, true);
+          // Set up comprehensive logging
+          const originalLog = console.log;
+          const originalError = console.error;
+          console.log = function(...args) {
+            originalLog.apply(console, args);
+            // Also output to terminal if possible
+            if (typeof tbAddMessage !== 'undefined' && args[0] && typeof args[0] === 'string' && args[0].includes('Waku')) {
+              tbAddMessage('debug', args.join(' '), true);
+            }
+          };
+          
+          try {
+            tbWakuNode = await createLightNode(nodeOptions);
+            console.log('Waku node created successfully');
+          } catch(nodeError) {
+            console.error('Failed to create Waku node:', nodeError);
+            tbAddMessage('system', 'Failed to create Waku node: ' + nodeError.message, true);
+            return;
+          }
+          tbAddMessage('system', `Mesh node started. Waiting for peers...`, true);
+          
+          // Wait for at least one peer connection with detailed monitoring
+          let connected = false;
+          console.log('Starting peer connection wait...');
+          for (let i = 0; i < 40; i++) {  // Increase to 20 seconds total
+            await new Promise(r => setTimeout(r, 500));
+            try {
+              const conns = tbWakuNode.libp2p.getConnections();
+              console.log(`Attempt ${i+1}: Connected peers:`, conns.length, conns);
+              
+              // Also check the peer store
+              if (tbWakuNode.libp2p.peerStore) {
+                const peers = tbWakuNode.libp2p.peerStore.peers;
+                console.log(`Peers in store:`, peers ? Array.from(peers.keys()) : 'none');
+              }
+              
+              // Check dialer for pending connections
+              if (tbWakuNode.libp2p.dialer) {
+                const addresses = tbWakuNode.libp2p.dialer.addresses;
+                console.log(`Dialer addresses:`, addresses);
+              }
+              
+              if (conns.length > 0) {
+                connected = true;
+                console.log('Peer connection established!');
+                break;
+              }
+            } catch(e) {
+              console.log(`Error checking connections:`, e.message);
+            }
+          }
+          
+          if (!connected) {
+            console.log('No peers connected after timeout');
+            // Try to show what addresses we're trying to connect to
+            if (tbWakuNode.libp2p.addressManager) {
+              console.log('Address manager:', tbWakuNode.libp2p.addressManager);
+            }
+          }
+          
+          tbAddMessage('system', 'Warning: No peers connected yet. Will try to send anyway.', true);
+          
+          tbAddMessage('system', `Subscribing to ${TB_CONTENT_TOPIC}...`, true);
+
+          const decoder = tbWakuNode.createDecoder({
+            contentTopic: TB_CONTENT_TOPIC
+          });
+
+          try {
+            await tbWakuNode.filter.subscribe(decoder, (decodedMsg) => {
+              try {
+                const msg = JSON.parse(new TextDecoder().decode(decodedMsg.payload));
+                const time = tbTime(new Date(msg.timestamp || Date.now()));
+
+                // Skip our own messages
+                if (msg.sender === (tbNickname || 'anon') && msg.time) {
+                  const lastLine = output.innerHTML.split('\n').pop();
+                  if (lastLine && lastLine.includes(msg.text)) return;
+                }
+
+                tbAddMessage(msg.sender, msg.text, time, false);
+
+                // Jimmy mentions
+                if (/@jimmy|@jimm/.test(msg.text)) {
+                  tbJimmyReply(msg.sender);
+                }
+              } catch(e) {
+                console.warn('tb parse error:', e);
+              }
+            });
+          } catch(subscribeError) {
+            tbAddMessage('system', `Subscribe failed: ${subscribeError.message}`, true);
+            console.error('Subscription error:', subscribeError);
+          }
+
+          // Check actual peer connections
+          let peerCount = 0;
+          try {
+            const conns = tbWakuNode.libp2p.getConnections();
+            peerCount = conns.length;
+          } catch(e) {}
+          
+          if (peerCount > 0) {
+            tbConnected = true;
+          } else {
+            tbConnected = false;
+          }
+          
+          const peerText = peerCount > 0 ? ` (${peerCount} peer${peerCount > 1 ? 's' : ''})` : '';
+          // Update prompt to show connection status
+          const statusColor = peerCount > 0 ? 'var(--accent)' : 'var(--accent4)';
+          const statusText = peerCount > 0 ? 'connected' : 'connecting';
+          const promptHtml = `<span style="color:var(--accent2)">🔥 ${tbNickname || 'anon'}</span> <span style="color:${statusColor}">● ${statusText}${peerText}</span> `;
+          document.querySelector('.terminal-input-line .prompt').innerHTML = promptHtml;
+          
+          if (peerCount > 0) {
+            tbAddMessage('system', `● connected${peerText} — Troll box online. Say anything. @jimmy for reactions.`, true);
+          } else {
+            tbAddMessage('system', '⚠ No peers connected yet. Will attempt to connect in background.', true);
+          }
+
+        } catch(err) {
+          console.error('tb init failed:', err);
+          tbAddMessage('system', 'Mesh connection failed: ' + err.message, true);
         }
       }
 
@@ -658,111 +753,12 @@ MiB Mem : 128000.0 total,  34567.8 free,  45678.9 used,  47753.3 buff/cache
         tbAddMessage(sender, text, time, false);
 
         try {
-          console.log('Sending message to topic:', TB_CONTENT_TOPIC);
-          
-          // Check connection status
-          const conns = tbWakuNode.libp2p.getConnections();
-          console.log('Current peer connections:', conns.length, conns);
-          
           const enc = tbWakuNode.createEncoder({ contentTopic: TB_CONTENT_TOPIC });
-          const payload = new TextEncoder().encode(JSON.stringify({
+          tbWakuNode.lightPush.send(enc, new TextEncoder().encode(JSON.stringify({
             sender, text, time: new Date().toISOString(), timestamp: Date.now()
+          }), { autoRetry: true }).catch(err => {
+            tbAddMessage('system', `Send failed: ${err.message}`, true);
           }));
-          
-          console.log('Payload:', payload);
-          console.log('LightPush available:', !!tbWakuNode.lightPush);
-          
-          // Try both publish and lightPush methods
-          if (tbWakuNode.lightPush) {
-            console.log('Sending message via lightPush:');
-            console.log('- Topic:', TB_CONTENT_TOPIC);
-            console.log('- Payload:', new TextDecoder().decode(payload));
-            console.log('- Encoder:', enc);
-            
-            // Debug encoder properties - Waku SDK uses contentTopic
-            console.log('=== ENCODER DEBUG ===');
-            console.log('Encoder object:', enc);
-            console.log('Encoder constructor:', enc.constructor?.name);
-            console.log('Encoder properties:', Object.keys(enc));
-            
-            // Check if we need to set routingInfo for pubsubTopic
-            if (!enc.pubsubTopic) {
-              console.warn('Encoder missing pubsubTopic, attempting to fix...');
-              // Try to get pubsubTopic from libp2p connection info
-              const conns = tbWakuNode.libp2p.getConnections();
-              if (conns.length > 0) {
-                console.log('Using first connected peer for routing info');
-              }
-            }
-            
-            // Check for contentTopic (correct property name)
-            if (enc.contentTopic) {
-              console.log('Encoder contentTopic:', enc.contentTopic);
-              if (enc.contentTopic !== TB_CONTENT_TOPIC) {
-                console.warn('CONTENT TOPIC MISMATCH!');
-                console.log('Expected:', TB_CONTENT_TOPIC);
-              }
-            } else {
-              console.warn('Encoder has no contentTopic property!');
-            }
-            
-            // Alternative: Try sending with explicit peer selection
-            console.log('Trying lightPush.send with explicit options...');
-            tbWakuNode.lightPush.send(
-              enc, 
-              payload, 
-              { autoRetry: true, timeout: 10000 }
-            ).then(results => {
-              console.log('Send results:', results);
-              if (results.successes && results.successes.length > 0) {
-                console.log(`Sent to ${results.successes.length} peers successfully`);
-                tbAddMessage('system', `✓ Sent to ${results.successes.length} peer(s)`, true);
-              } else {
-                console.warn('No successful sends, but no errors either');
-                tbAddMessage('system', `✓ Message queued for retry`, true);
-              }
-            }).catch(directErr => {
-              console.error('Direct send failed:', directErr);
-              tbAddMessage('system', `Send failed: ${directErr.message}`, true);
-            });
-            
-            tbWakuNode.lightPush.send(enc, payload, { autoRetry: true })
-              .then(() => {
-                console.log('Message sent via lightPush - waiting for propagation...');
-                // Wait a bit to see if message comes back through filter
-                setTimeout(() => {
-                  const conns = tbWakuNode.libp2p.getConnections();
-                  console.log(`After send: ${conns.length} peer connections`);
-                }, 3000);
-                
-                tbAddMessage('system', `✓ Sent to ${TB_CONTENT_TOPIC}`, true);
-              })
-              .catch(err => {
-                console.error('lightPush send failed:', err);
-                // Fallback to publish if available
-                if (tbWakuNode.publish) {
-                  tbWakuNode.publish(enc, payload)
-                    .then(() => console.log('Message sent via publish'))
-                    .catch(pubErr => console.error('Publish also failed:', pubErr));
-                }
-              });
-          } else {
-            console.error('LightPush not available!');
-            // Try publish method as fallback
-            if (tbWakuNode.publish) {
-              tbWakuNode.publish(enc, payload)
-                .then(() => {
-                  console.log('Message sent via publish fallback');
-                  tbAddMessage('system', `✓ Sent to ${TB_CONTENT_TOPIC} (publish)`, true);
-                })
-                .catch(err => {
-                  console.error('Publish failed:', err);
-                  tbAddMessage('system', `Send failed: ${err.message}`, true);
-                });
-            } else {
-              tbAddMessage('system', 'No publish methods available!', true);
-            }
-          }
         } catch(sendError) {
           tbAddMessage('system', `Send error: ${sendError.message}`, true);
         }
