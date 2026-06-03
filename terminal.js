@@ -83,7 +83,7 @@
                          <span style="color:var(--accent2)">Discords:</span> 47
                          <span style="color:var(--accent2)">Coffee:</span>  ☕☕☕☕☕ (5/5)`,
 
-      version: () => `<span style="color:var(--accent)">vaclavOS 2026.06-5</span>
+      version: () => `<span style="color:var(--accent)">vaclavOS 2026.06-6</span>
         <span style="color:var(--fg-muted); font-size:12px;">Waku Mesh Trollbox - GitHub Pages Deploy</span>`,
       
       whoami: () => `vpavlin — Solution Engineer @ Logos
@@ -617,6 +617,15 @@ MiB Mem : 128000.0 total,  34567.8 free,  45678.9 used,  47753.3 buff/cache
           let connected = false;
           console.log('Starting peer connection wait...');
           console.log('Bootstrap peers configured:', nodeOptions.bootstrapPeers);
+          
+          // Set up periodic peer monitoring
+          setInterval(() => {
+            const conns = tbWakuNode?.libp2p?.getConnections() || [];
+            console.log(`Peer monitor: ${conns.length} connected peers`);
+            if (conns.length === 0) {
+              console.warn('No peers connected! Messages may not propagate.');
+            }
+          }, 5000);
           for (let i = 0; i < 40; i++) {  // Increase to 20 seconds total
             await new Promise(r => setTimeout(r, 500));
             try {
@@ -668,6 +677,28 @@ MiB Mem : 128000.0 total,  34567.8 free,  45678.9 used,  47753.3 buff/cache
             
             // Wait for subscription to be ready
             let subscribeReady = false;
+            
+            // Also try lightPush subscription as alternative
+            if (tbWakuNode.lightPush) {
+              console.log('Also setting up lightPush subscription...');
+              const lightPushDecoder = tbWakuNode.createDecoder({ contentTopic: TB_CONTENT_TOPIC });
+              tbWakuNode.lightPush.subscribe(lightPushDecoder, (msg) => {
+                console.log('LightPush received message!');
+                try {
+                  const parsedMsg = JSON.parse(new TextDecoder().decode(msg.payload));
+                  console.log('Parsed via lightPush:', parsedMsg);
+                  const time = tbTime(new Date(parsedMsg.timestamp || Date.now()));
+                  tbAddMessage(parsedMsg.sender, parsedMsg.text, time, false);
+                } catch(e) {
+                  console.warn('LightPush parse error:', e);
+                }
+              }).then(() => {
+                console.log('LightPush subscription active');
+              }).catch(err => {
+                console.error('LightPush subscription failed:', err);
+              });
+            }
+            
             tbWakuNode.filter.subscribe(decoder, (decodedMsg) => {
               if (!subscribeReady) {
                 console.log('Filter subscription activated');
@@ -783,9 +814,27 @@ MiB Mem : 128000.0 total,  34567.8 free,  45678.9 used,  47753.3 buff/cache
           
           // Try both publish and lightPush methods
           if (tbWakuNode.lightPush) {
+            console.log('Sending message via lightPush:');
+            console.log('- Topic:', TB_CONTENT_TOPIC);
+            console.log('- Payload:', new TextDecoder().decode(payload));
+            console.log('- Encoder:', enc);
+            
+            // Verify encoder topic matches subscription topic
+            if (enc.topic !== TB_CONTENT_TOPIC) {
+              console.warn('ENCODER TOPIC MISMATCH!');
+              console.log('Encoder topic:', enc.topic);
+              console.log('Expected topic:', TB_CONTENT_TOPIC);
+            }
+            
             tbWakuNode.lightPush.send(enc, payload, { autoRetry: true })
               .then(() => {
-                console.log('Message sent via lightPush');
+                console.log('Message sent via lightPush - waiting for propagation...');
+                // Wait a bit to see if message comes back through filter
+                setTimeout(() => {
+                  const conns = tbWakuNode.libp2p.getConnections();
+                  console.log(`After send: ${conns.length} peer connections`);
+                }, 3000);
+                
                 tbAddMessage('system', `✓ Sent to ${TB_CONTENT_TOPIC}`, true);
               })
               .catch(err => {
