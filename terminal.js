@@ -787,4 +787,20 @@ function tbSendMsg(text) {
 
         return peers.slice(0, 10);
       }
+
+      // Export to window for external access
+      window.__tb = {
+        init: tbInit,
+        send: tbSendMsg,
+        quit: () => {},
+        renderInput: () => {},
+        showPeers: getPeerInfo,
+        showStatus: () => {},
+        discoverPeers: () => {}
+      };
+
+      // Start initialization on load
+      document.addEventListener('DOMContentLoaded', () => {
+        tbInit().catch(err => console.error('tbInit failed:', err));
       });
+    });
