@@ -590,10 +590,15 @@ MiB Mem : 128000.0 total,  34567.8 free,  45678.9 used,  47753.3 buff/cache
           console.log('Waku node created successfully');
           
           // Wait for node to be ready
-await new Promise(resolve => setTimeout(resolve, 2000));
+          await new Promise(resolve => setTimeout(resolve, 2000));
           
           // Check connection status periodically
+          console.log('Waku node initialized successfully');
           
+        } catch (error) {
+          console.error('tbInit failed:', error);
+          tbAddMessage('system', `Waku initialization failed: ${error.message}`, true);
+        }
       }
 
       function tbJimmyReply(from) {
