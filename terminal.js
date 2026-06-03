@@ -607,6 +607,18 @@ MiB Mem : 128000.0 total,  34567.8 free,  45678.9 used,  47753.3 buff/cache
             promptEl.innerHTML = `<span style="color:var(--accent2)">🔥 ${tbNickname || 'anon'}</span> <span style="color:${connected ? 'var(--accent)' : 'var(--accent4)'}">● ${statusText}</span>`;
           }
           
+          // Periodically check connection status and update UI
+          setInterval(() => {
+            const conns = tbWakuNode?.libp2p?.getConnections();
+            if (conns && conns.length > 0) {
+              const promptEl = document.querySelector('.terminal-input-line .prompt');
+              if (promptEl && promptEl.innerHTML.includes('connecting')) {
+                promptEl.innerHTML = `<span style="color:var(--accent2)">🔥 ${tbNickname || 'anon'}</span> <span style="color:var(--accent)">● connected</span>`;
+                console.log('Connection established!');
+              }
+            }
+          }, 5000);
+          
         } catch (error) {
           console.error('tbInit failed:', error);
           tbAddMessage('system', `Waku initialization failed: ${error.message}`, true);
