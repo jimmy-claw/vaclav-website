@@ -83,7 +83,7 @@
                          <span style="color:var(--accent2)">Discords:</span> 47
                          <span style="color:var(--accent2)">Coffee:</span>  ☕☕☕☕☕ (5/5)`,
 
-      version: () => `<span style="color:var(--accent)">vaclavOS 2026.06-3</span>
+      version: () => `<span style="color:var(--accent)">vaclavOS 2026.06-4</span>
         <span style="color:var(--fg-muted); font-size:12px;">Waku Mesh Trollbox - GitHub Pages Deploy</span>`,
       
       whoami: () => `vpavlin — Solution Engineer @ Logos
@@ -661,9 +661,12 @@ MiB Mem : 128000.0 total,  34567.8 free,  45678.9 used,  47753.3 buff/cache
           });
 
           try {
+            console.log('Setting up filter subscription for topic:', TB_CONTENT_TOPIC);
             await tbWakuNode.filter.subscribe(decoder, (decodedMsg) => {
+              console.log('Received message on topic:', TB_CONTENT_TOPIC);
               try {
                 const msg = JSON.parse(new TextDecoder().decode(decodedMsg.payload));
+                console.log('Parsed message:', msg);
                 const time = tbTime(new Date(msg.timestamp || Date.now()));
 
                 // Skip our own messages
@@ -752,16 +755,22 @@ MiB Mem : 128000.0 total,  34567.8 free,  45678.9 used,  47753.3 buff/cache
         tbAddMessage(sender, text, time, false);
 
         try {
+          console.log('Sending message to topic:', TB_CONTENT_TOPIC);
           const enc = tbWakuNode.createEncoder({ contentTopic: TB_CONTENT_TOPIC });
           const payload = new TextEncoder().encode(JSON.stringify({
             sender, text, time: new Date().toISOString(), timestamp: Date.now()
           }));
           
+          console.log('Payload:', payload);
+          console.log('LightPush available:', !!tbWakuNode.lightPush);
+          
           tbWakuNode.lightPush.send(enc, payload, { autoRetry: true })
             .then(() => {
-              // Message sent successfully
+              console.log('Message sent successfully');
+              tbAddMessage('system', `✓ Sent to ${TB_CONTENT_TOPIC}`, true);
             })
             .catch(err => {
+              console.error('Send failed:', err);
               tbAddMessage('system', `Send failed: ${err.message}`, true);
             });
         } catch(sendError) {
