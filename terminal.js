@@ -558,6 +558,9 @@ MiB Mem : 128000.0 total,  34567.8 free,  45678.9 used,  47753.3 buff/cache
           }
           
           console.log('Waku SDK loaded successfully:', window.Waku);
+          console.log('Waku SDK properties:', Object.keys(window.Waku));
+          console.log('createLightNode available:', typeof createLightNode === 'function');
+          console.log('lightPush in Waku:', !!window.Waku.lightPush);
 
           // Create light node with both default bootstrap and explicit waku.sandbox peers
           const nodeOptions = {
@@ -607,6 +610,8 @@ MiB Mem : 128000.0 total,  34567.8 free,  45678.9 used,  47753.3 buff/cache
           try {
             tbWakuNode = await createLightNode(nodeOptions);
             console.log('Waku node created successfully');
+            console.log('tbWakuNode properties:', Object.keys(tbWakuNode));
+            console.log('lightPush method:', tbWakuNode.lightPush);
           } catch(nodeError) {
             console.error('Failed to create Waku node:', nodeError);
             tbAddMessage('system', 'Failed to create Waku node: ' + nodeError.message, true);
@@ -746,8 +751,18 @@ function tbSendMsg(text) {
         const time = tbTime(new Date());
         tbAddMessage(sender, text, time, false);
 
+        // Debug: show what's available on tbWakuNode
+        console.log('tbSendMsg - tbWakuNode:', tbWakuNode);
+        if (tbWakuNode) {
+          console.log('tbWakuNode properties:', Object.keys(tbWakuNode));
+          console.log('lightPush available:', !!tbWakuNode.lightPush);
+          if (!tbWakuNode.lightPush) {
+            console.log('Available methods:', Object.keys(tbWakuNode).filter(k => typeof tbWakuNode[k] === 'function'));
+          }
+        }
+
         if (!tbWakuNode?.lightPush) {
-          tbAddMessage('system', 'Waku node not ready...', true);
+          tbAddMessage('system', 'Waku node not ready or lightPush not available...', true);
           return;
         }
 
