@@ -767,20 +767,33 @@ function tbSendMsg(text) {
         }
 
         const msg = JSON.stringify({ sender, text, ts: Date.now() });
+        console.log('Creating encoder for topic:', TB_CONTENT_TOPIC);
         const enc = tbWakuNode.createEncoder({ contentTopic: TB_CONTENT_TOPIC });
+        console.log('Encoder created:', enc);
+        if (!enc) {
+          tbAddMessage('system', 'ERROR: Encoder creation failed!', true);
+          return;
+        }
         const payload = new TextEncoder().encode(msg);
+        console.log('Payload created, length:', payload.length);
         
         console.log('Sending', payload.length, 'bytes:', msg.substring(0, 100));
         
         tbWakuNode.lightPush.send(enc, payload)
           .then(results => {
-            if (results.failures?.length > 0) {
-              tbAddMessage('system', `Failed to ${results.failures.length} peers`, true);
+            console.log('lightPush.send result:', results);
+            if (results.failures && results.failures.length > 0) {
+              console.error('Send failures details:', JSON.stringify(results.failures, null, 2));
+              tbAddMessage('system', `Failed to ${results.failures.length} peers:`, true);
+              for (const failure of results.failures) {
+                tbAddMessage('system', `  - Peer: ${failure.peerId || 'unknown'}, Error: ${failure.error || 'unknown'}`, true);
+              }
             } else {
               tbAddMessage('system', '✓ Sent');
             }
           })
           .catch(err => {
+            console.error('lightPush.send error:', err);
             tbAddMessage('system', 'Send failed: ' + err.message, true);
           });
       }
