@@ -753,11 +753,31 @@ MiB Mem : 128000.0 total,  34567.8 free,  45678.9 used,  47753.3 buff/cache
         tbAddMessage(sender, text, time, false);
 
         try {
+          console.log('tbSendMsg called with:', text);
           const enc = tbWakuNode.createEncoder({ contentTopic: TB_CONTENT_TOPIC });
-          const payload = new TextEncoder().encode(JSON.stringify({
-            sender, text, time: new Date().toISOString(), timestamp: Date.now()
-          }));
+          const messageObj = {
+            sender, 
+            text, 
+            time: new Date().toISOString(), 
+            timestamp: Date.now()
+          };
+          console.log('Message object:', messageObj);
+          const payload = new TextEncoder().encode(JSON.stringify(messageObj));
+          console.log('Payload length:', payload.length, 'bytes');
+          console.log('Payload content:', new TextDecoder().decode(payload));
           
+          // Debug encoder
+          console.log('Encoder object:', enc);
+          console.log('Encoder properties:', Object.keys(enc));
+          console.log('Encoder pubsubTopic:', enc.pubsubTopic);
+          console.log('Encoder contentTopic:', enc.contentTopic);
+          
+          if (payload.length === 0) {
+            tbAddMessage('system', 'Error: Payload is empty!', true);
+            return;
+          }
+          
+          console.log('Sending via lightPush...');
           tbWakuNode.lightPush.send(enc, payload, { autoRetry: true })
             .then(results => {
               console.log('Send results:', results);
