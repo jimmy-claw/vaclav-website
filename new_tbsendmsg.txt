@@ -1,0 +1,29 @@
+     function tbSendMsg(text) {
+        // Check if node exists and has lightPush
+        if (!tbWakuNode || !tbWakuNode.lightPush) {
+          tbAddMessage('system', 'Not connected to mesh...', true);
+          return;
+        }
+
+        // Check for active connections
+        try {
+          const conns = tbWakuNode.libp2p.getConnections();
+          if (conns.length === 0) {
+            tbAddMessage('system', 'No peer connections. Message queued...', true);
+          }
+        } catch(e) {}
+
+        const sender = tbNickname || 'anon';
+        const time = tbTime(new Date());
+        tbAddMessage(sender, text, time, false);
+
+        try {
+          const enc = tbWakuNode.createEncoder({ contentTopic: TB_CONTENT_TOPIC });
+          tbWakuNode.lightPush.send(enc, new TextEncoder().encode(JSON.stringify({
+            sender, text, time: new Date().toISOString(), timestamp: Date.now()
+          }), { autoRetry: true }).catch(err => {
+            tbAddMessage('system', `Send failed: ${err.message}`, true);
+          });
+        } catch(sendError) {
+          tbAddMessage('system', `Send error: ${sendError.message}`, true);
+        }

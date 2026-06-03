@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>vpavlin@logos:~$ — Václav Pavlín</title>
+  <meta name="description" content="Václav Pavlín — Solution Engineer at Logos, ex-Red Hat (10 years), co-founder. Code, peer-to-peer, privacy, local AI, and coffee.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐧</text></svg>">
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --bg-card: #111111;
+      --bg-terminal: #0c0c0c;
+      --fg: #e8e6e3;
+      --fg-muted: #8a8580;
+      --accent: #ff6b35;        /* orange */
+      --accent2: #4ecdc4;       /* teal */
+      --accent3: #e74c3c;       /* red */
+      --accent4: #f39c12;       /* yellow/gold */
+      --border: #1e1e1e;
+      --mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Courier New', monospace;
+      --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    [data-theme="light"] {
+      --bg: #faf8f5;
+      --bg-card: #ffffff;
+      --bg-terminal: #f5f5f0;
+      --fg: #1a1a1a;
+      --fg-muted: #7a7570;
+      --accent: #e05520;
+      --accent2: #2ba89e;
+      --accent3: #c0392b;
+      --accent4: #d4890a;
+      --border: #e5e0d8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--mono);
+      font-size: 14px;
+      line-height: 1.7;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--fg-muted); }
+
+    /* ── Theme toggle ── */
+    .theme-toggle {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 100;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-size: 14px;
+      font-family: var(--mono);
+      color: var(--fg-muted);
+      transition: all 0.2s;
+    }
+    .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Container ── */
+    .container {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ── Terminal Prompt ── */
+    .prompt {
+      color: var(--accent);
+    }
+    .prompt-user { color: var(--accent2); }
+    .prompt-path { color: var(--accent4); }
+    .prompt-pipe { color: var(--fg-muted); }
+
+    /* ── ASCII Hero ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 40px 24px;
+      position: relative;
+    }
+
+    .ascii-art {
+      font-family: var(--mono);
+      font-size: clamp(8px, 1.5vw, 12px);
+      line-height: 1.2;
+      color: var(--accent);
+      white-space: pre;
+      margin-bottom: 24px;
+      opacity: 0.9;
+    }
+
+    .hero .tagline {
+      font-size: clamp(0.85rem, 2vw, 1.05rem);
+      color: var(--fg-muted);
+      margin-bottom: 24px;
+      max-width: 520px;
+    }
+
+    /* ── Interest tags ── */
+    .interests {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 32px;
+      max-width: 520px;
+    }
+    .interests .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      font-size: 12px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--fg-muted);
+      font-family: var(--mono);
+      white-space: nowrap;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .interests .tag:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .hero-links {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .hero-links a {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--fg);
+      text-decoration: none;
+      font-size: 13px;
+      padding: 8px 16px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-family: var(--mono);
+      transition: all 0.2s;
+    }
+    .hero-links a:hover {
+      border-color: var(--accent);
+      background: var(--bg-card);
+      color: var(--accent);
+    }
+
+    /* ── Sections ── */
+    section {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 60px 24px;
+    }
+    section h2 {
+      font-family: var(--mono);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      margin-bottom: 24px;
+    }
+
+    /* ── Terminal Widget ── */
+    .terminal {
+      background: var(--bg-terminal);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 24px 0;
+    }
+    .terminal-header {
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      padding: 6px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--fg-muted);
+      user-select: none;
+    }
+    .terminal-body {
+      padding: 16px;
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.6;
+      min-height: 200px;
+      max-height: 500px;
+      overflow-y: auto;
+    }
+    .terminal-output {
+      white-space: pre-wrap;
+      word-break: break-all;
+      margin-bottom: 8px;
+    }
+    .terminal-input-line {
+      display: flex;
+      align-items: baseline;
+      gap: 0;
+      padding-top: 2px;
+    }
+    .terminal-input-line .prompt {
+      margin-right: 4px;
+      line-height: 1.6;
+      white-space: nowrap;
+    }
+    .terminal-input {
+      background: transparent;
+      border: none;
+      color: var(--fg);
+      font-family: var(--mono);
+      font-size: 13px;
+      flex: 1;
+      outline: none;
+      caret-color: var(--accent);
+    }
+
+    /* ── Neofetch ── */
+    .neofetch {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+    .neofetch-ascii {
+      font-family: var(--mono);
+      font-size: 10px;
+      line-height: 1.15;
+      color: var(--accent);
+      white-space: pre;
+      flex-shrink: 0;
+    }
+    .neofetch-info {
+      flex: 1;
+      min-width: 200px;
+    }
+    .neofetch-info .line {
+      margin-bottom: 4px;
+      font-size: 13px;
+    }
+    .neofetch-info .label { color: var(--accent2); }
+    .neofetch-info .value { color: var(--fg); }
+
+    /* ── About (passwd style) ── */
+    .passwd-line {
+      font-family: var(--mono);
+      font-size: 13px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      color: var(--fg);
+    }
+    .passwd-line .field { color: var(--accent2); }
+    .passwd-line .value { color: var(--fg); }
+    .passwd-line .comment { color: var(--fg-muted); font-style: italic; }
+
+    /* ── Timeline ── */
+    .timeline {
+      position: relative;
+      padding-left: 28px;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 8px;
+      bottom: 8px;
+      width: 2px;
+      background: var(--border);
+    }
+    .timeline-item {
+      position: relative;
+      margin-bottom: 28px;
+    }
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -32px;
+      top: 8px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+    .timeline-item .period {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--accent2);
+      margin-bottom: 4px;
+    }
+    .timeline-item h3 {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .timeline-item p {
+      color: var(--fg-muted);
+      font-size: 13px;
+    }
+
+    /* ── Skills grid ── */
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 12px;
+    }
+    .skill-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 16px;
+      text-align: center;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .skill-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+    .skill-card .icon { font-size: 24px; margin-bottom: 6px; }
+    .skill-card .label {
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+    .skill-card .desc {
+      font-size: 11px;
+      color: var(--fg-muted);
+    }
+
+    /* ── Projects grid ── */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 12px;
+    }
+    .project-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 20px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .project-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+    .project-card .project-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .project-card .project-header .icon { font-size: 20px; }
+    .project-card .project-header h3 {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .project-card .project-header h3 a {
+      color: var(--fg);
+      text-decoration: none;
+    }
+    .project-card .project-header h3 a:hover { color: var(--accent); }
+    .project-card .project-desc {
+      font-size: 12px;
+      color: var(--fg-muted);
+      margin-bottom: 10px;
+    }
+    .project-card .project-meta {
+      display: flex;
+      gap: 12px;
+      font-size: 11px;
+      color: var(--fg-muted);
+      font-family: var(--mono);
+    }
+
+    /* ── Journalctl feed ── */
+    .journal-feed {
+      background: var(--bg-terminal);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 16px;
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.8;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .journal-entry { color: var(--fg-muted); }
+    .journal-entry .timestamp { color: var(--fg-muted); }
+    .journal-entry .service { color: var(--accent2); }
+    .journal-entry .msg { color: var(--fg); }
+    .journal-entry .status-ok { color: var(--accent); }
+    .journal-entry .status-warn { color: var(--accent4); }
+    .journal-entry .status-err { color: var(--accent3); }
+
+    /* ── Fun facts ── */
+    .fun-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px;
+    }
+    .fun-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 20px;
+      text-align: center;
+    }
+    .fun-card .big-emoji { font-size: 32px; margin-bottom: 8px; }
+    .fun-card p { font-size: 12px; color: var(--fg-muted); }
+    .fun-card p strong { color: var(--fg); }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 32px 24px;
+      border-top: 1px solid var(--border);
+      color: var(--fg-muted);
+      font-size: 12px;
+      font-family: var(--mono);
+    }
+    footer .heart { color: var(--accent); }
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    /* ── Scroll reveal ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      .hero h1 { font-size: 1.5rem; }
+      .ascii-art { font-size: 7px; }
+      .neofetch { flex-direction: column; align-items: center; }
+      section { padding: 40px 16px; }
+      .skills-grid { grid-template-columns: 1fr 1fr; }
+      .projects-grid { grid-template-columns: 1fr; }
+      .fun-grid { grid-template-columns: 1fr 1fr; }
+      .disclaimer-box { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">☕ → 🌙</button>
+
+  <!-- ── Hero ── -->
+  <header class="hero">
+    <div class="ascii-art" id="ascii-banner">
+ ███╗   ██╗███████╗██╗  ██╗██╗   ██╗███████╗
+ ████╗  ██║██╔════╝╚██╗██╔╝██║   ██║██╔════╝
+ ██╔██╗ ██║█████╗   ╚███╔╝ ██║   ██║███████╗
+ ██║╚██╗██║██╔══╝   ██╔██╗ ██║   ██║╚════██║
+ ██║ ╚████║███████╗██╔╝ ██╗╚██████╔╝███████║
+ ╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝
+    </div>
+
+    <p class="tagline">
+      <span class="prompt-user">vpavlin</span><span class="prompt-pipe">@</span><span class="prompt-path">logos</span>:<span class="prompt-path">~</span>$ <span class="prompt">whoami</span><br>
+      builder · integrator · chaos agent
+    </p>
+
+    <div class="interests">
+      <span class="tag">🐧 Linux</span>
+      <span class="tag">💻 Rust</span>
+      <span class="tag">🤝 Peer-to-Peer</span>
+      <span class="tag">🔒 Privacy</span>
+      <span class="tag">🤖 Local AI</span>
+      <span class="tag">☕ Coffee</span>
+      <span class="tag">🖨️ 3D Printing</span>
+      <span class="tag">👨‍👩‍👧‍👦 Dad</span>
+    </div>
+
+    <div class="hero-links">
+      <a href="https://github.com/vpavlin" target="_blank">⌨️ GitHub</a>
+      <a href="https://logos.co" target="_blank">🌐 Logos</a>
+      <a href="https://www.linkedin.com/in/vpavlin" target="_blank">💼 LinkedIn</a>
+      <a href="https://x.com/vpavlin" target="_blank">🐦 X</a>
+      <a href="mailto:vpavlin@proton.me">✉️ Email</a>
+    </div>
+  </header>
+
+  <!-- ── Interactive Terminal ── -->
+  <section class="reveal">
+    <h2>▶ terminal</h2>
+    <div class="terminal">
+      <div class="terminal-header">
+        <span>bash — vpavlin@logos — 80×24</span>
+        <span style="margin-left:auto; color:var(--fg-muted); font-size:11px;">kitty 0.41.2</span>
+      </div>
+      <div class="terminal-body" id="terminal-body">
+        <div class="terminal-output" id="terminal-output">
+Welcome to <span style="color:var(--accent)">vaclavOS</span> 2026.06 (GNU/Linux 6.8 x86_64)
+
+ Type a command and press Enter. Try: <span style="color:var(--accent2)">neofetch</span>, <span style="color:var(--accent2)">whoami</span>, <span style="color:var(--accent2)">fortune</span>, <span style="color:var(--accent2)">trollbox</span>, <span style="color:var(--accent2)">help</span>
+</div>
+        <div class="terminal-input-line">
+          <span class="prompt"><span class="prompt-user">vpavlin</span>@<span class="prompt-path">logos</span>:<span class="prompt-path">~</span>$ </span>
+          <input type="text" class="terminal-input" id="terminal-input" autofocus spellcheck="false" autocomplete="off">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── About (passwd style) ── -->
+  <section class="reveal">
+    <h2># cat /etc/passwd</h2>
+    <div class="passwd-line">
+      <span class="field">vpavlin</span>:<span class="field">x</span>:<span class="field">1000</span>:<span class="field">1000</span>:
+      <span class="comment">Václav Pavlín, Solution Engineer @ Logos, ex-Red Hat (10y), co-founder</span>:
+      <span class="value">/home/vpavlin</span>:<span class="value">/usr/bin/bash</span>
+    </div>
+    <div style="margin-top:16px; color:var(--fg-muted); font-size:13px; line-height:1.7;">
+      <p>
+        I'm a <strong style="color:var(--fg)">builder and integrator</strong> — the kind of person who connects
+        the pieces that everyone else treats as separate problems. Currently at
+        <strong style="color:var(--fg)">Logos</strong>, I help teams adopt blockchain infrastructure, explain
+        complex architectures, and make things work together.
+      </p>
+      <p style="margin-top:12px;">
+        Before that, I spent <strong style="color:var(--fg)">almost 10 years at Red Hat</strong> building enterprise
+        solutions, then co-founded a startup — learning what breaks first and coming back wiser.
+      </p>
+      <p style="margin-top:12px;">
+        When I'm not talking to kids about robotics, I'm probably
+        3D-printing something, tweaking Home Assistant automations, or brewing coffee —
+        V60, AeroPress, Chemex, espresso. No bias, all methods welcome.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── Journey (journalctl style) ── -->
+  <section class="reveal">
+    <h2># journalctl --user -u career.service</h2>
+    <div class="journal-feed">
+      <div class="journal-entry">
+        <span class="timestamp">[2025-09-01]</span> <span class="service">career.service</span>: <span class="status-ok">● Started "Chaos Agent" at Logos</span> — jumping around to disrupt or fix things
+      </div>
+      <div class="journal-entry">
+        <span class="timestamp">[2025-04-01]</span> <span class="service">career.service</span>: <span class="status-ok">● Started "Solution Engineer" at Logos</span> — integration, architecture, P2P infrastructure, AI-native agents
+      </div>
+      <div class="journal-entry">
+        <span class="timestamp">[2022-05-01]</span> <span class="service">career.service</span>: <span class="status-warn">⚠ Started "Co-Founder" process</span> — learned that the first thing to break is always the thing you assumed would work
+      </div>
+      <div class="journal-entry">
+        <span class="timestamp">[2012-07-01]</span> <span class="service">career.service</span>: <span class="status-ok">● Started "Red Hat" service</span> — enterprise solutions, open source, making complex systems do what customers actually need (10y runtime)
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Skills (neofetch style) ── -->
+  <section class="reveal">
+    <h2># neofetch --skills</h2>
+    <div class="neofetch">
+      <div class="neofetch-ascii">
+        .--.
+        |o_o |
+        |:_/ |
+       //   \ \
+      (|     | )
+     /'\_   _/`\
+     \___)=(___/
+      </div>
+      <div class="neofetch-info">
+        <div class="line"><span class="label">OS</span> <span class="value">vaclavOS 2026.06</span></div>
+        <div class="line"><span class="label">Kernel</span> <span class="value">6.8.0-logos</span></div>
+        <div class="line"><span class="label">Shell</span> <span class="value">bash 5.2</span></div>
+        <div class="line"><span class="label">DE</span> <span class="value">Wayland + Sway</span></div>
+        <div class="line"><span class="label">WM</span> <span class="value">i3 / sway</span></div>
+        <div class="line"><span class="label">Terminal</span> <span class="value">kitty / foot</span></div>
+        <div class="line"><span class="label">CPU</span> <span class="value">Ryzen AI Max+ 395</span></div>
+        <div class="line"><span class="label">RAM</span> <span class="value">128GB DDR5</span></div>
+        <div class="line"><span class="label">Uptime</span> <span class="value">∞ days</span></div>
+        <br>
+        <div class="line"><span class="label">Skills:</span></div>
+        <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;">
+          <span style="background:var(--accent); color:var(--bg); padding:2px 8px; border-radius:3px; font-size:11px;">Rust</span>
+          <span style="background:var(--accent2); color:var(--bg); padding:2px 8px; border-radius:3px; font-size:11px;">Qt/C++</span>
+          <span style="background:var(--accent4); color:var(--bg); padding:2px 8px; border-radius:3px; font-size:11px;">Blockchain</span>
+          <span style="background:var(--accent3); color:var(--bg); padding:2px 8px; border-radius:3px; font-size:11px;">ZK proofs</span>
+          <span style="background:var(--accent); color:var(--bg); padding:2px 8px; border-radius:3px; font-size:11px;">Home Assistant</span>
+          <span style="background:var(--accent2); color:var(--bg); padding:2px 8px; border-radius:3px; font-size:11px;">3D Printing</span>
+          <span style="background:var(--accent4); color:var(--bg); padding:2px 8px; border-radius:3px; font-size:11px;">Local AI</span>
+          <span style="background:var(--accent3); color:var(--bg); padding:2px 8px; border-radius:3px; font-size:11px;">Coffee brewing</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Featured Projects ── -->
+  <section class="reveal">
+    <h2># ls /home/vpavlin/projects/</h2>
+    <div class="projects-grid">
+      <a href="https://github.com/logos-co/spel" target="_blank" class="project-card" style="text-decoration:none; color:inherit;">
+        <div class="project-header">
+          <span class="icon">⚡</span>
+          <h3>SPEL</h3>
+        </div>
+        <p class="project-desc">The Logos Execution Zone — a Solana-like stateless program framework with ZK proofs for private execution.</p>
+        <div class="project-meta">
+          <span>logos-co/spel</span>
+        </div>
+      </a>
+      <a href="https://github.com/logos-co/qaku" target="_blank" class="project-card" style="text-decoration:none; color:inherit;">
+        <div class="project-header">
+          <span class="icon">🔍</span>
+          <h3>QAKU</h3>
+        </div>
+        <p class="project-desc">Logos messaging and storage layer — peer-to-peer communication and decentralized content addressing.</p>
+        <div class="project-meta">
+          <span>logos-co/qaku</span>
+        </div>
+      </a>
+      <a href="https://github.com/vpavlin/joke-wall" target="_blank" class="project-card" style="text-decoration:none; color:inherit;">
+        <div class="project-header">
+          <span class="icon">🎭</span>
+          <h3>Joke Wall</h3>
+        </div>
+        <p class="project-desc">Community joke voting app on SPEL/LEZ — a Basecamp UI plugin that proves blockchain can be fun.</p>
+        <div class="project-meta">
+          <span>⭐ 1</span>
+          <span>vpavlin/joke-wall</span>
+        </div>
+      </a>
+      <a href="https://github.com/logos-co/whisper-wall" target="_blank" class="project-card" style="text-decoration:none; color:inherit;">
+        <div class="project-header">
+          <span class="icon">🗣️</span>
+          <h3>Whisper Wall</h3>
+        </div>
+        <p class="project-desc">Anonymous bidding board — SPEL demo program for the Logos Execution Zone.</p>
+        <div class="project-meta">
+          <span>⭐ 3</span>
+          <span>logos-co/whisper-wall</span>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- ── Talks ── -->
+  <section class="reveal">
+    <h2># cat /var/log/talks.log</h2>
+    <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:6px;border:1px solid var(--border);">
+      <iframe src="https://www.youtube.com/embed/2P12-XqSgnk" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" allowfullscreen loading="lazy"></iframe>
+    </div>
+    <p style="margin-top:16px;color:var(--fg-muted);font-size:12px;font-family:var(--mono);">More talks on <a href="https://www.youtube.com/playlist?list=PLzGB6MUPRUVJOcNSw_h1Lt-ZVQrb8501F" target="_blank" style="color:var(--accent);">YouTube →</a></p>
+  </section>
+
+  <!-- ── Fun Facts (fortune style) ── -->
+  <section class="reveal">
+    <h2># fortune</h2>
+    <div class="fun-grid">
+      <div class="fun-card">
+        <div class="big-emoji">👨‍👩‍👧‍👦</div>
+        <p>Dad of 2 kids who are <strong>obsessed with robots</strong>. Future competitors.</p>
+      </div>
+      <div class="fun-card">
+        <div class="big-emoji">🇨🇿</div>
+        <p>Based in <strong>Brno, Czech Republic</strong> — the city of brains and beer</p>
+      </div>
+      <div class="fun-card">
+        <div class="big-emoji">🦞</div>
+        <p>My AI agent is named <strong>Jimmy</strong>. He's technically my second-in-command.</p>
+      </div>
+      <div class="fun-card">
+        <div class="big-emoji">🔧</div>
+        <p><strong>455+ repos</strong> on GitHub. Some of them are good. Most are experiments.</p>
+      </div>
+      <div class="fun-card">
+        <div class="big-emoji">🖨️</div>
+        <p><strong>3D printing</strong> — if it can be printed, it probably will be</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Footer ── -->
+  <footer>
+    <span class="prompt"><span class="prompt-user">vpavlin</span>@<span class="prompt-path">logos</span>:<span class="prompt-path">~</span>$ </span><span class="prompt">exit</span><br>
+    Built with <span class="heart">♥</span> by <a href="https://jimmy-claw.github.io/blog/" target="_blank">Jimmy 🦞</a> · 2026
+  </footer>
+
+  <script src="terminal.js"></script>
+
+  <!-- Waku Mesh SDK (troll box) -->
+  <script type="module">
+    import * as W from 'https://unpkg.com/@waku/sdk@0.0.35/bundle/index.js';
+    // Expose to global scope for inline script
+    window.createLightNode = W.createLightNode;
+    window.createEncoder = W.createEncoder;
+    window.createDecoder = W.createDecoder;
+    window.waitForRemotePeer = W.waitForRemotePeer;
+    window.Waku = W;
+  </script>
+</body>
+</html>
