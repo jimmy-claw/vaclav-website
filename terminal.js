@@ -795,11 +795,6 @@ MiB Mem : 128000.0 total,  34567.8 free,  45678.9 used,  47753.3 buff/cache
               tbAddMessage('system', 'JSON serialization failed: ' + jsonError.message, true);
               return;
             }
-          } catch(jsonError) {
-            console.error('JSON.stringify error:', jsonError);
-            tbAddMessage('system', 'JSON serialization failed: ' + jsonError.message, true);
-            return;
-          }
           
           console.log('Sending via lightPush...');
           tbWakuNode.lightPush.send(enc, payload, { autoRetry: true })
@@ -814,7 +809,8 @@ MiB Mem : 128000.0 total,  34567.8 free,  45678.9 used,  47753.3 buff/cache
             .catch(err => {
               tbAddMessage('system', `Send failed: ${err.message}`, true);
             });
-        } catch(sendError) {
+        } catch (sendError) {
+          console.error('tbSendMsg error:', sendError);
           tbAddMessage('system', `Send error: ${sendError.message}`, true);
         }
       }
