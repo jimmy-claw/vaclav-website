@@ -83,7 +83,7 @@
                          <span style="color:var(--accent2)">Discords:</span> 47
                          <span style="color:var(--accent2)">Coffee:</span>  ☕☕☕☕☕ (5/5)`,
 
-      version: () => `<span style="color:var(--accent)">vaclavOS 2026.06-1</span>
+      version: () => `<span style="color:var(--accent)">vaclavOS 2026.06-2</span>
         <span style="color:var(--fg-muted); font-size:12px;">Waku Mesh Trollbox - GitHub Pages Deploy</span>`,
       
       whoami: () => `vpavlin — Solution Engineer @ Logos
