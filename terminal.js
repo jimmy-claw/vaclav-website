@@ -83,7 +83,7 @@
                          <span style="color:var(--accent2)">Discords:</span> 47
                          <span style="color:var(--accent2)">Coffee:</span>  ☕☕☕☕☕ (5/5)`,
 
-      version: () => `<span style="color:var(--accent)">vaclavOS 2026.06-6</span>
+      version: () => `<span style="color:var(--accent)">vaclavOS 2026.06-7</span>
         <span style="color:var(--fg-muted); font-size:12px;">Waku Mesh Trollbox - GitHub Pages Deploy</span>`,
       
       whoami: () => `vpavlin — Solution Engineer @ Logos
@@ -819,12 +819,31 @@ MiB Mem : 128000.0 total,  34567.8 free,  45678.9 used,  47753.3 buff/cache
             console.log('- Payload:', new TextDecoder().decode(payload));
             console.log('- Encoder:', enc);
             
-            // Verify encoder topic matches subscription topic
-            if (enc.topic !== TB_CONTENT_TOPIC) {
-              console.warn('ENCODER TOPIC MISMATCH!');
-              console.log('Encoder topic:', enc.topic);
-              console.log('Expected topic:', TB_CONTENT_TOPIC);
-            }
+            // Debug encoder properties thoroughly
+            console.log('=== ENCODER DEBUG ===');
+            console.log('Encoder object:', enc);
+            console.log('Encoder constructor:', enc.constructor?.name);
+            console.log('Encoder properties:', Object.keys(enc));
+            
+            // Try to find the topic in various ways
+            const topicKeys = Object.keys(enc).filter(k => k.toLowerCase().includes('topic'));
+            console.log('Topic-related keys:', topicKeys);
+            topicKeys.forEach(key => {
+              console.log(`  ${key}:`, enc[key]);
+            });
+            
+            // Try alternative send method - direct lightPush with content topic string
+            console.log('Trying direct lightPush.send with content topic...');
+            tbWakuNode.lightPush.send(
+              TB_CONTENT_TOPIC, 
+              payload, 
+              { autoRetry: true }
+            ).then(() => {
+              console.log('Direct send succeeded!');
+              tbAddMessage('system', `✓ Sent via direct method`, true);
+            }).catch(directErr => {
+              console.error('Direct send failed:', directErr);
+            });
             
             tbWakuNode.lightPush.send(enc, payload, { autoRetry: true })
               .then(() => {
