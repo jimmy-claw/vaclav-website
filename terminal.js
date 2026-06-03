@@ -563,7 +563,7 @@ MiB Mem : 128000.0 total,  34567.8 free,  45678.9 used,  47753.3 buff/cache
           
           console.log('Waku SDK loaded successfully:', window.Waku);
 
-          // Create light node with both default bootstrap and explicit waku.sandbox peers
+          // Create light node with auto sharding configuration
           const nodeOptions = {
             numPeersToUse: 2,
             defaultBootstrap: true,
@@ -577,19 +577,14 @@ MiB Mem : 128000.0 total,  34567.8 free,  45678.9 used,  47753.3 buff/cache
               '/dns4/node-01.gc-us-central1-a.waku.sandbox.status.im/tcp/8000/wss/p2p/16Uiu2HAmRv1iQ3NoMMcjbtRmKxPuYBbF9nLYz2SDv9MTN8WhGuUU',
               '/dns4/node-01.ac-cn-hongkong-c.waku.sandbox.status.im/tcp/8000/wss/p2p/16Uiu2HAmQYiojgZ8APsh9wqbWNyCstVhnp9gbeNrxSEQnLJchC92'
             ],
-            // Set contentTopic for automatic routing propagation
-            contentTopics: [TB_CONTENT_TOPIC]
+            // Use auto sharding with content topics
+            networkConfig: {
+              clusterId: 0,  // Waku Network cluster ID
+              numShardsInCluster: 128  // Default number of shards
+            }
           };
           
-          // Store pubsubTopic for encoder creation
-          let tbPubsubTopic = null;
           
-          // Wait for node to start and get pubsubTopic
-          await new Promise(resolve => setTimeout(resolve, 2000));
-          if (tbWakuNode.libp2p && tbWakuNode.libp2p.services?.pubsub) {
-            tbPubsubTopic = tbWakuNode.libp2p.services.pubsub.getTopics()?.[0] || null;
-            console.log('Got pubsubTopic:', tbPubsubTopic);
-          }
           
           // Wait for node to start and get pubsubTopic
           await new Promise(resolve => setTimeout(resolve, 2000));
