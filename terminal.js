@@ -766,20 +766,46 @@ function tbSendMsg(text) {
           return;
         }
 
-        const msg = JSON.stringify({ sender, text, ts: Date.now() });
+        console.log('tbSendMsg called with text:', text);
+        console.log('sender:', sender);
+        const msgObj = { sender, text, ts: Date.now() };
+        console.log('Message object:', msgObj);
+        
+        // Check if message is valid
+        if (!text || !text.trim()) {
+          tbAddMessage('system', 'ERROR: Empty message received!', true);
+          return;
+        }
+        
+        const msg = JSON.stringify(msgObj);
+        console.log('JSON string:', msg.substring(0, 100));
+        console.log('JSON length:', msg.length);
+        
+        if (!msg || msg.length === 0) {
+          tbAddMessage('system', 'ERROR: JSON.stringify returned empty!', true);
+          return;
+        }
+        
         console.log('Creating encoder for topic:', TB_CONTENT_TOPIC);
         const enc = tbWakuNode.createEncoder({ contentTopic: TB_CONTENT_TOPIC });
-        console.log('Encoder created:', enc);
+        console.log('Encoder created:', !!enc);
         if (!enc) {
           tbAddMessage('system', 'ERROR: Encoder creation failed!', true);
           return;
         }
+        
+        console.log('Encoding payload...');
         const payload = new TextEncoder().encode(msg);
-        console.log('Payload created, length:', payload.length);
+        console.log('Payload length:', payload.length, 'bytes');
+        
+        if (!payload || payload.length === 0) {
+          tbAddMessage('system', 'ERROR: Payload encoding failed - empty!', true);
+          return;
+        }
         
         console.log('Sending', payload.length, 'bytes:', msg.substring(0, 100));
         
-        tbWakuNode.lightPush.send(enc, payload)
+        tbWakuNode.lightPush.send(enc, { payload: payload })
           .then(results => {
             console.log('lightPush.send result:', results);
             if (results.failures && results.failures.length > 0) {
