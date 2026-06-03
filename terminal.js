@@ -762,9 +762,23 @@ MiB Mem : 128000.0 total,  34567.8 free,  45678.9 used,  47753.3 buff/cache
             timestamp: Date.now()
           };
           console.log('Message object:', messageObj);
-          const payload = new TextEncoder().encode(JSON.stringify(messageObj));
+          try {
+            const jsonString = JSON.stringify(messageObj);
+            console.log('JSON.stringify result:', jsonString);
+            console.log('JSON.stringify length:', jsonString ? jsonString.length : 'null/undefined');
+            if (!jsonString) {
+              tbAddMessage('system', 'ERROR: JSON.stringify returned null/undefined!', true);
+              return;
+            }
+            
+            const payload = new TextEncoder().encode(jsonString);
           console.log('Payload length:', payload.length, 'bytes');
           console.log('Payload content:', new TextDecoder().decode(payload));
+          
+          // Additional debugging
+          console.log('tbNickname:', tbNickname);
+          console.log('TB_CONTENT_TOPIC:', TB_CONTENT_TOPIC);
+          console.log('Sender:', sender);
           
           // Debug encoder
           console.log('Encoder object:', enc);
@@ -773,7 +787,17 @@ MiB Mem : 128000.0 total,  34567.8 free,  45678.9 used,  47753.3 buff/cache
           console.log('Encoder contentTopic:', enc.contentTopic);
           
           if (payload.length === 0) {
-            tbAddMessage('system', 'Error: Payload is empty!', true);
+                tbAddMessage('system', 'Error: Payload is empty!', true);
+                return;
+              }
+            } catch(jsonError) {
+              console.error('JSON.stringify error:', jsonError);
+              tbAddMessage('system', 'JSON serialization failed: ' + jsonError.message, true);
+              return;
+            }
+          } catch(jsonError) {
+            console.error('JSON.stringify error:', jsonError);
+            tbAddMessage('system', 'JSON serialization failed: ' + jsonError.message, true);
             return;
           }
           
