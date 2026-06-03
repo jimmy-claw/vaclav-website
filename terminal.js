@@ -762,6 +762,8 @@ MiB Mem : 128000.0 total,  34567.8 free,  45678.9 used,  47753.3 buff/cache
             timestamp: Date.now()
           };
           console.log('Message object:', messageObj);
+          
+          let payload;
           try {
             const jsonString = JSON.stringify(messageObj);
             console.log('JSON.stringify result:', jsonString);
@@ -771,7 +773,13 @@ MiB Mem : 128000.0 total,  34567.8 free,  45678.9 used,  47753.3 buff/cache
               return;
             }
             
-            const payload = new TextEncoder().encode(jsonString);
+            payload = new TextEncoder().encode(jsonString);
+          } catch(jsonError) {
+            console.error('JSON.stringify error:', jsonError);
+            tbAddMessage('system', 'JSON serialization failed: ' + jsonError.message, true);
+            return;
+          }
+          
           console.log('Payload length:', payload.length, 'bytes');
           console.log('Payload content:', new TextDecoder().decode(payload));
           
@@ -790,11 +798,6 @@ MiB Mem : 128000.0 total,  34567.8 free,  45678.9 used,  47753.3 buff/cache
                 tbAddMessage('system', 'Error: Payload is empty!', true);
                 return;
               }
-            } catch(jsonError) {
-              console.error('JSON.stringify error:', jsonError);
-              tbAddMessage('system', 'JSON serialization failed: ' + jsonError.message, true);
-              return;
-            }
           
           console.log('Sending via lightPush...');
           tbWakuNode.lightPush.send(enc, payload, { autoRetry: true })
