@@ -592,8 +592,20 @@ MiB Mem : 128000.0 total,  34567.8 free,  45678.9 used,  47753.3 buff/cache
           // Wait for node to be ready
           await new Promise(resolve => setTimeout(resolve, 2000));
           
-          // Check connection status periodically
-          console.log('Waku node initialized successfully');
+          // Check actual peer connections
+          const conns = tbWakuNode.libp2p.getConnections();
+          console.log('Peer connections:', conns.length);
+          
+          // Update UI status
+          const connected = conns.length > 0;
+          const statusText = connected ? 'connected' : 'connecting';
+          console.log('Waku node initialized, status:', statusText);
+          
+          // Update the prompt display if it exists
+          const promptEl = document.querySelector('.terminal-input-line .prompt');
+          if (promptEl) {
+            promptEl.innerHTML = `<span style="color:var(--accent2)">🔥 ${tbNickname || 'anon'}</span> <span style="color:${connected ? 'var(--accent)' : 'var(--accent4)'}">● ${statusText}</span>`;
+          }
           
         } catch (error) {
           console.error('tbInit failed:', error);
