@@ -586,7 +586,7 @@ MiB Mem : 128000.0 total,  34567.8 free,  45678.9 used,  47753.3 buff/cache
           
           // Create the Waku node
           console.log('Creating Waku node with options:', nodeOptions);
-          const tbWakuNode = await createLightNode(nodeOptions);
+          tbWakuNode = await createLightNode(nodeOptions);
           console.log('Waku node created successfully');
           
           // Wait for node to be ready
