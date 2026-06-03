@@ -770,4 +770,21 @@ function tbSendMsg(text) {
           });
       }
 
-    });
+      // ── Peer info extraction ──
+      function getPeerInfo() {
+        const peers = [];
+        const node = tbWakuNode;
+        if (!node) return peers;
+
+        try {
+          if (node.libp2p?.connectionManager?.connections) {
+            const conns = node.libp2p.connectionManager.connections;
+            for (const peer of conns.values()) {
+              peers.push(peer);
+            }
+          }
+        } catch(e) {}
+
+        return peers.slice(0, 10);
+      }
+      });
