@@ -749,11 +749,17 @@ MiB Mem : 128000.0 total,  34567.8 free,  45678.9 used,  47753.3 buff/cache
 
         try {
           const enc = tbWakuNode.createEncoder({ contentTopic: TB_CONTENT_TOPIC });
-          tbWakuNode.lightPush.send(enc, new TextEncoder().encode(JSON.stringify({
+          const payload = new TextEncoder().encode(JSON.stringify({
             sender, text, time: new Date().toISOString(), timestamp: Date.now()
-          }), { autoRetry: true }).catch(err => {
-            tbAddMessage('system', `Send failed: ${err.message}`, true);
           }));
+          
+          tbWakuNode.lightPush.send(enc, payload, { autoRetry: true })
+            .then(() => {
+              // Message sent successfully
+            })
+            .catch(err => {
+              tbAddMessage('system', `Send failed: ${err.message}`, true);
+            });
         } catch(sendError) {
           tbAddMessage('system', `Send error: ${sendError.message}`, true);
         }
