@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>vpavlin@logos:~$ — Václav Pavlín</title>
   <meta name="description" content="Václav Pavlín — Solution Engineer at Logos, ex-Red Hat (10 years), co-founder. Code, peer-to-peer, privacy, local AI, and coffee.">
-  <meta name="version" content="2026.06-23">
+  <meta name="version" content="2026.06-24">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐧</text></svg>">
   <style>
     :root {
@@ -514,7 +514,7 @@
     <div class="terminal">
       <div class="terminal-header">
         <span>bash — vpavlin@logos — 80×24</span>
-        <span style="margin-left:auto; color:var(--fg-muted); font-size:11px;">kitty 0.41.2 | vaclavOS 2026.06-14</span>
+        <span style="margin-left:auto; color:var(--fg-muted); font-size:11px;">kitty 0.41.2 | vaclavOS <span id="version-display">loading...</span></span>
       </div>
       <div class="terminal-body" id="terminal-body">
         <div class="terminal-output" id="terminal-output">
@@ -718,5 +718,17 @@ Welcome to <span style="color:var(--accent)">vaclavOS</span> 2026.06 (GNU/Linux 
     window.waitForRemotePeer = W.waitForRemotePeer;
     window.Waku = W;
   </script>
-</body>
+<script>
+      // Display version from meta tag
+      document.addEventListener('DOMContentLoaded', function() {
+        const versionMeta = document.querySelector('meta[name="version"]');
+        if (versionMeta) {
+          const version = versionMeta.getAttribute('content');
+          const versionDisplay = document.getElementById('version-display');
+          if (versionDisplay) {
+            versionDisplay.textContent = version;
+          }
+        }
+      });
+    </script></body>
 </html>
