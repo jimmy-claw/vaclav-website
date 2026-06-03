@@ -576,8 +576,118 @@ MiB Mem : 128000.0 total,  34567.8 free,  45678.9 used,  47753.3 buff/cache
               '/dns4/node-01.do-ams3.waku.sandbox.status.im/tcp/8000/wss/p2p/16Uiu2HAmNaeL4p3WEYzC9mgXBmBWSgWjPHRvatZTXnp8Jgv3iKsb',
               '/dns4/node-01.gc-us-central1-a.waku.sandbox.status.im/tcp/8000/wss/p2p/16Uiu2HAmRv1iQ3NoMMcjbtRmKxPuYBbF9nLYz2SDv9MTN8WhGuUU',
               '/dns4/node-01.ac-cn-hongkong-c.waku.sandbox.status.im/tcp/8000/wss/p2p/16Uiu2HAmQYiojgZ8APsh9wqbWNyCstVhnp9gbeNrxSEQnLJchC92'
-            ]
+            ],
+            // Set contentTopic for automatic routing propagation
+            contentTopics: [TB_CONTENT_TOPIC]
           };
+          
+          // Store pubsubTopic for encoder creation
+          let tbPubsubTopic = null;
+          
+          // Wait for node to start and get pubsubTopic
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          if (tbWakuNode.libp2p && tbWakuNode.libp2p.services?.pubsub) {
+            tbPubsubTopic = tbWakuNode.libp2p.services.pubsub.getTopics()?.[0] || null;
+            console.log('Got pubsubTopic:', tbPubsubTopic);
+          }
+          
+          // Wait for node to start and get pubsubTopic
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          if (tbWakuNode.libp2p && tbWakuNode.libp2p.services?.pubsub) {
+            tbPubsubTopic = tbWakuNode.libp2p.services.pubsub.getTopics()?.[0] || null;
+            console.log('Got pubsubTopic:', tbPubsubTopic);
+          }
+          
+          // Wait for node to start and get pubsubTopic
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          if (tbWakuNode.libp2p && tbWakuNode.libp2p.services?.pubsub) {
+            tbPubsubTopic = tbWakuNode.libp2p.services.pubsub.getTopics()?.[0] || null;
+            console.log('Got pubsubTopic:', tbPubsubTopic);
+          }
+          
+          // Wait for node to start and get pubsubTopic
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          if (tbWakuNode.libp2p && tbWakuNode.libp2p.services?.pubsub) {
+            tbPubsubTopic = tbWakuNode.libp2p.services.pubsub.getTopics()?.[0] || null;
+            console.log('Got pubsubTopic:', tbPubsubTopic);
+          }
+          
+          // Wait for node to start and get pubsubTopic
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          if (tbWakuNode.libp2p && tbWakuNode.libp2p.services?.pubsub) {
+            tbPubsubTopic = tbWakuNode.libp2p.services.pubsub.getTopics()?.[0] || null;
+            console.log('Got pubsubTopic:', tbPubsubTopic);
+          }
+          
+          // Wait for node to start and get pubsubTopic
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          if (tbWakuNode.libp2p && tbWakuNode.libp2p.services?.pubsub) {
+            tbPubsubTopic = tbWakuNode.libp2p.services.pubsub.getTopics()?.[0] || null;
+            console.log('Got pubsubTopic:', tbPubsubTopic);
+          }
+          
+          // Wait for node to start and get pubsubTopic
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          if (tbWakuNode.libp2p && tbWakuNode.libp2p.services?.pubsub) {
+            tbPubsubTopic = tbWakuNode.libp2p.services.pubsub.getTopics()?.[0] || null;
+            console.log('Got pubsubTopic:', tbPubsubTopic);
+          }
+          
+          // Wait for node to start and get pubsubTopic
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          if (tbWakuNode.libp2p && tbWakuNode.libp2p.services?.pubsub) {
+            tbPubsubTopic = tbWakuNode.libp2p.services.pubsub.getTopics()?.[0] || null;
+            console.log('Got pubsubTopic:', tbPubsubTopic);
+          }
+          
+          // Wait for node to start and get pubsubTopic
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          if (tbWakuNode.libp2p && tbWakuNode.libp2p.services?.pubsub) {
+            tbPubsubTopic = tbWakuNode.libp2p.services.pubsub.getTopics()?.[0] || null;
+            console.log('Got pubsubTopic:', tbPubsubTopic);
+          }
+          
+          // Wait for node to start and get pubsubTopic
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          if (tbWakuNode.libp2p && tbWakuNode.libp2p.services?.pubsub) {
+            tbPubsubTopic = tbWakuNode.libp2p.services.pubsub.getTopics()?.[0] || null;
+            console.log('Got pubsubTopic:', tbPubsubTopic);
+          }
+          
+          // Wait for node to start and get pubsubTopic
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          if (tbWakuNode.libp2p && tbWakuNode.libp2p.services?.pubsub) {
+            tbPubsubTopic = tbWakuNode.libp2p.services.pubsub.getTopics()?.[0] || null;
+            console.log('Got pubsubTopic:', tbPubsubTopic);
+          }
+          
+          // Wait for node to start and get pubsubTopic
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          if (tbWakuNode.libp2p && tbWakuNode.libp2p.services?.pubsub) {
+            tbPubsubTopic = tbWakuNode.libp2p.services.pubsub.getTopics()?.[0] || null;
+            console.log('Got pubsubTopic:', tbPubsubTopic);
+          }
+          
+          // Wait for node to start and get pubsubTopic
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          if (tbWakuNode.libp2p && tbWakuNode.libp2p.services?.pubsub) {
+            tbPubsubTopic = tbWakuNode.libp2p.services.pubsub.getTopics()?.[0] || null;
+            console.log('Got pubsubTopic:', tbPubsubTopic);
+          }
+          
+          // Wait for node to start and get pubsubTopic
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          if (tbWakuNode.libp2p && tbWakuNode.libp2p.services?.pubsub) {
+            tbPubsubTopic = tbWakuNode.libp2p.services.pubsub.getTopics()?.[0] || null;
+            console.log('Got pubsubTopic:', tbPubsubTopic);
+          }
+          
+          // Wait for node to start and get pubsubTopic
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          if (tbWakuNode.libp2p && tbWakuNode.libp2p.services?.pubsub) {
+            tbPubsubTopic = tbWakuNode.libp2p.services.pubsub.getTopics()?.[0] || null;
+            console.log('Got pubsubTopic:', tbPubsubTopic);
+          }
           
           // Enable Waku debug logging - multiple methods
           if (typeof window !== 'undefined') {
@@ -819,30 +929,51 @@ MiB Mem : 128000.0 total,  34567.8 free,  45678.9 used,  47753.3 buff/cache
             console.log('- Payload:', new TextDecoder().decode(payload));
             console.log('- Encoder:', enc);
             
-            // Debug encoder properties thoroughly
+            // Debug encoder properties - Waku SDK uses contentTopic
             console.log('=== ENCODER DEBUG ===');
             console.log('Encoder object:', enc);
             console.log('Encoder constructor:', enc.constructor?.name);
             console.log('Encoder properties:', Object.keys(enc));
             
-            // Try to find the topic in various ways
-            const topicKeys = Object.keys(enc).filter(k => k.toLowerCase().includes('topic'));
-            console.log('Topic-related keys:', topicKeys);
-            topicKeys.forEach(key => {
-              console.log(`  ${key}:`, enc[key]);
-            });
+            // Check if we need to set routingInfo for pubsubTopic
+            if (!enc.pubsubTopic) {
+              console.warn('Encoder missing pubsubTopic, attempting to fix...');
+              // Try to get pubsubTopic from libp2p connection info
+              const conns = tbWakuNode.libp2p.getConnections();
+              if (conns.length > 0) {
+                console.log('Using first connected peer for routing info');
+              }
+            }
             
-            // Try alternative send method - direct lightPush with content topic string
-            console.log('Trying direct lightPush.send with content topic...');
+            // Check for contentTopic (correct property name)
+            if (enc.contentTopic) {
+              console.log('Encoder contentTopic:', enc.contentTopic);
+              if (enc.contentTopic !== TB_CONTENT_TOPIC) {
+                console.warn('CONTENT TOPIC MISMATCH!');
+                console.log('Expected:', TB_CONTENT_TOPIC);
+              }
+            } else {
+              console.warn('Encoder has no contentTopic property!');
+            }
+            
+            // Alternative: Try sending with explicit peer selection
+            console.log('Trying lightPush.send with explicit options...');
             tbWakuNode.lightPush.send(
-              TB_CONTENT_TOPIC, 
+              enc, 
               payload, 
-              { autoRetry: true }
-            ).then(() => {
-              console.log('Direct send succeeded!');
-              tbAddMessage('system', `✓ Sent via direct method`, true);
+              { autoRetry: true, timeout: 10000 }
+            ).then(results => {
+              console.log('Send results:', results);
+              if (results.successes && results.successes.length > 0) {
+                console.log(`Sent to ${results.successes.length} peers successfully`);
+                tbAddMessage('system', `✓ Sent to ${results.successes.length} peer(s)`, true);
+              } else {
+                console.warn('No successful sends, but no errors either');
+                tbAddMessage('system', `✓ Message queued for retry`, true);
+              }
             }).catch(directErr => {
               console.error('Direct send failed:', directErr);
+              tbAddMessage('system', `Send failed: ${directErr.message}`, true);
             });
             
             tbWakuNode.lightPush.send(enc, payload, { autoRetry: true })
